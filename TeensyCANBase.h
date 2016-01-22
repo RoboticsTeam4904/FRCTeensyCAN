@@ -7,15 +7,15 @@
 
 class TeensyCANBase {
 private:
-  FlexCAN CANbus;
+	FlexCAN CANbus;
 public:
-  uint32_t canID;
-  TeensyCANBase(uint32_t id = 0x222);
-  void begin();
-  void end();
-  int available();
-  int read(byte* &msg);
-  int write(const CAN_message_t &msg);
+	uint32_t canID;
+	TeensyCANBase(uint32_t id = 0x222);
+	void begin();
+	void end();
+	int available();
+	int read(byte* &msg);
+	int write(byte* &msg);
 
 };
 

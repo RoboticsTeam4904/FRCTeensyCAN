@@ -21,12 +21,19 @@ int TeensyCANBase::read(byte* &msg) {
 	CAN_message_t rxmsg;
 
 	if (CANbus.read(&rxmsg)) {
-		if (rxmsg.id == )
-		memcpy(msg, rxmsg.);
+		if (rxmsg.id == canID){
+			memcpy(msg, rxmsg.buf, 8);
+		}
 		return 0;
 	}
 	return 1;
 }
-int TeensyCANBase::write(const CAN_message_t &msg) {
+int TeensyCANBase::write(byte* &msg) {
+	CAN_message_t txmsg;
+
+	txmsg.id = canID;
+	txmsg.len = 8;
+
+	memcpy(txmsg.buf, msg, 8);
 	CANBus.write(&msg);
 }
