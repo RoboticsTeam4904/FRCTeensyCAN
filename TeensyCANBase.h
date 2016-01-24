@@ -1,4 +1,3 @@
-
 #ifndef __TeensyCANBase_H__
 #define __TeensyCANBase_H__
 

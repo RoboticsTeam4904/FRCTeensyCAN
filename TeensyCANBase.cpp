@@ -1,6 +1,4 @@
-
-#include <FlexCAN.cpp>
-#include <TeensyCANBase.h>
+#Include <TeensyCANBase.h>
 
 TeensyCANBase::TeensyCANBase(uint32_t id) {
 	canID = id;
@@ -20,7 +18,7 @@ int TeensyCANBase::available() {
 int TeensyCANBase::read(byte* &msg) {
 	CAN_message_t rxmsg;
 
-	if (CANbus.read(&rxmsg)) {
+	if (CANbus.read(rxmsg)) {
 		if (rxmsg.id == canID){
 			memcpy(msg, rxmsg.buf, 8);
 		}
@@ -35,5 +33,7 @@ int TeensyCANBase::write(byte* &msg) {
 	txmsg.len = 8;
 
 	memcpy(txmsg.buf, msg, 8);
-	CANBus.write(&msg);
+	CANbus.write(txmsg);
+
+	return 0;
 }
