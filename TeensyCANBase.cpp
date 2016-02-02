@@ -21,8 +21,8 @@ int TeensyCANBase::read(byte* &msg) {
 	if (CANbus.read(rxmsg)) {
 		if (rxmsg.id == canID){
 			memcpy(msg, rxmsg.buf, 8);
+			return 0;
 		}
-		return 0;
 	}
 	return 1;
 }
