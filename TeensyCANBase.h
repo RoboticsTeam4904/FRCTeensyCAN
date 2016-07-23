@@ -15,7 +15,8 @@ public:
 	static void end();
 	static void update();
 
-	TeensyCANBase * getNext();
+	TeensyCANBase * nextTeensyCANBase;
+	
 	uint32_t getId();
 
 	int call(byte* msg, byte* resp);
@@ -23,7 +24,6 @@ protected:
 	uint32_t canID;
 	int (*callback)(byte* msg, byte* resp);
 
-	TeensyCANBase * nextTeensyCANBase;
 };
 
 #endif // __TeensyCANBase_H__

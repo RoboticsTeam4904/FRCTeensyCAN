@@ -1,20 +1,22 @@
 #include "TeensyCANBase.h"
+#include <Arduino.h>
 #include "../FlexCAN/FlexCAN.h"
 
 TeensyCANBase * TeensyCANBase::firstTeensyCANBase = NULL;
 FlexCAN * TeensyCANBase::CANbus = NULL;
 
-TeensyCANBase::TeensyCANBase(uint32_t id, int (*callback)(byte* msg, byte* resp)){
+TeensyCANBase::TeensyCANBase(uint32_t id, int (*callback)(byte* msg, byte* resp)) : canID(id), callback(callback){
 	if(TeensyCANBase::firstTeensyCANBase == NULL){
 		TeensyCANBase::firstTeensyCANBase = this;
 	}
 	else{
 		TeensyCANBase * next = TeensyCANBase::firstTeensyCANBase;
-		while(next != NULL){
-			next = next->getNext();
+		while(next->nextTeensyCANBase != NULL){
+			next = next->nextTeensyCANBase;
 		}
-		next = this;
+		next->nextTeensyCANBase = this;
 	}
+	nextTeensyCANBase = NULL;
 }
 
 
@@ -54,18 +56,16 @@ void TeensyCANBase::update(){
 					delete resp;
 					read = true;
 				}
-				teensyCANBase = teensyCANBase->getNext();
+				teensyCANBase = teensyCANBase->nextTeensyCANBase;
 			}
 		}
 	}
+
+	delay(10);
 }
 
 int TeensyCANBase::call(byte * msg, byte * resp){
-	return 0;
-}
-
-TeensyCANBase * TeensyCANBase::getNext(){
-	return nextTeensyCANBase;
+	return callback(msg, msg);
 }
 
 uint32_t TeensyCANBase::getId(){
