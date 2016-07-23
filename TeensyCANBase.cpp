@@ -1,76 +1,73 @@
-#include <TeensyCANBase.h>
+#include "TeensyCANBase.h"
+#include "../FlexCAN/FlexCAN.h"
 
-TeensyCANBase::TeensyCANBase(uint32_t id, int max_queue) {
-	canID = id;
-	max_queue_len = max_queue;
-	if(CANbus == NULL){
-		copies = 0;
-		CANbus = new FlexCAN(1000000);
+TeensyCANBase * TeensyCANBase::firstTeensyCANBase = NULL;
+FlexCAN * TeensyCANBase::CANbus = NULL;
+
+TeensyCANBase::TeensyCANBase(uint32_t id, int (*callback)(byte* msg, byte* resp)){
+	if(TeensyCANBase::firstTeensyCANBase == NULL){
+		TeensyCANBase::firstTeensyCANBase = this;
 	}
 	else{
-		copies++;
+		TeensyCANBase * next = TeensyCANBase::firstTeensyCANBase;
+		while(next != NULL){
+			next = next->getNext();
+		}
+		next = this;
 	}
 }
 
-TeensyCANBase::~TeensyCANBase(){
-	copies--;
-	if(copies <= 0){
-		delete CANbus;
-	}
-}
 
 void TeensyCANBase::begin() {
-	if(copies == 0){
-		CANbus->begin();
-	}
+	CANbus = new FlexCAN(1000000);
+	CANbus->begin();
 }
 
 void TeensyCANBase::end() {
-	if(copies == 0){
-		CANbus->end();
-	}
-}
-int TeensyCANBase::available() {
-	return CANbus->available();
+	CANbus->end();
+	delete CANbus;
 }
 
-int TeensyCANBase::read(byte* &msg) {
-	CAN_message_t rxmsg;
+void TeensyCANBase::update(){
+	while(CANbus->available()){
+		TeensyCANBase * teensyCANBase = TeensyCANBase::firstTeensyCANBase;
+		bool read = false;
 
-	for(int i = 0; i < message_queue.size(); i++){
-		if(message_queue[i].id == canID){
-			memcpy(msg, message_queue[i].buf, 8);
-			message_queue.erase(i);
-			return 0;
-		}
-	}
-
-	while(available()){
+		CAN_message_t rxmsg;
+		
 		if (CANbus->read(rxmsg)) {
-			if (rxmsg.id == canID){
-				memcpy(msg, rxmsg.buf, 8);
-				return 0;
-			}
-			else{
-				message_queue.push_back(rxmsg);
-				if(message_queue.size() > max_queue_len){
-					// TODO: make less inefficient
-					message_queue.erase(0);
+			while(!read && teensyCANBase != NULL){
+				if(rxmsg.id == teensyCANBase->getId()){
+					byte * msg = (uint8_t *) malloc(8);
+					memcpy(msg, rxmsg.buf, 8);
+					byte * resp = (uint8_t *) malloc(8);
+					if(teensyCANBase->call(msg, resp) == 0){
+						CAN_message_t txmsg;
+
+						txmsg.id = teensyCANBase->getId();
+						txmsg.len = 8;
+
+						memcpy(txmsg.buf, resp, 8);
+						CANbus->write(txmsg);
+					}
+					delete msg; // Cleanup, cleanup
+					delete resp;
+					read = true;
 				}
+				teensyCANBase = teensyCANBase->getNext();
 			}
 		}
 	}
-	
-	return 1;
 }
-int TeensyCANBase::write(byte* &msg) {
-	CAN_message_t txmsg;
 
-	txmsg.id = canID;
-	txmsg.len = 8;
-
-	memcpy(txmsg.buf, msg, 8);
-	CANbus->write(txmsg);
-
+int TeensyCANBase::call(byte * msg, byte * resp){
 	return 0;
+}
+
+TeensyCANBase * TeensyCANBase::getNext(){
+	return nextTeensyCANBase;
+}
+
+uint32_t TeensyCANBase::getId(){
+	return canID;
 }
