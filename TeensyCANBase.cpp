@@ -65,7 +65,7 @@ void TeensyCANBase::update(){
 }
 
 int TeensyCANBase::call(byte * msg, byte * resp){
-	return callback(msg, msg);
+	return callback(msg, resp);
 }
 
 uint32_t TeensyCANBase::getId(){
