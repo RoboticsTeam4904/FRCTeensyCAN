@@ -1,39 +1,73 @@
-#include <TeensyCANBase.h>
+#include "TeensyCANBase.h"
+#include <Arduino.h>
+#include "../FlexCAN/FlexCAN.h"
 
-TeensyCANBase::TeensyCANBase(uint32_t id) {
-	canID = id;
-	CANbus = FlexCAN(1000000);
+TeensyCANBase * TeensyCANBase::firstTeensyCANBase = NULL;
+FlexCAN * TeensyCANBase::CANbus = NULL;
+
+TeensyCANBase::TeensyCANBase(uint32_t id, int (*callback)(byte* msg, byte* resp)) : canID(id), callback(callback){
+	if(TeensyCANBase::firstTeensyCANBase == NULL){
+		TeensyCANBase::firstTeensyCANBase = this;
+	}
+	else{
+		TeensyCANBase * next = TeensyCANBase::firstTeensyCANBase;
+		while(next->nextTeensyCANBase != NULL){
+			next = next->nextTeensyCANBase;
+		}
+		next->nextTeensyCANBase = this;
+	}
+	nextTeensyCANBase = NULL;
 }
+
+
 void TeensyCANBase::begin() {
-	CANbus.begin();
+	CANbus = new FlexCAN(1000000);
+	CANbus->begin();
 }
 
 void TeensyCANBase::end() {
-	CANbus.end();
-}
-int TeensyCANBase::available() {
-	return CANbus.available();
+	CANbus->end();
+	delete CANbus;
 }
 
-int TeensyCANBase::read(byte* &msg) {
-	CAN_message_t rxmsg;
+void TeensyCANBase::update(){
+	while(CANbus->available()){
+		TeensyCANBase * teensyCANBase = TeensyCANBase::firstTeensyCANBase;
+		bool read = false;
 
-	if (CANbus.read(rxmsg)) {
-		if (rxmsg.id == canID){
-			memcpy(msg, rxmsg.buf, 8);
-			return 0;
+		CAN_message_t rxmsg;
+		
+		if (CANbus->read(rxmsg)) {
+			while(!read && teensyCANBase != NULL){
+				if(rxmsg.id == teensyCANBase->getId()){
+					byte * msg = (uint8_t *) malloc(8);
+					memcpy(msg, rxmsg.buf, 8);
+					byte * resp = (uint8_t *) malloc(8);
+					if(teensyCANBase->call(msg, resp) == 0){
+						CAN_message_t txmsg;
+
+						txmsg.id = teensyCANBase->getId();
+						txmsg.len = 8;
+
+						memcpy(txmsg.buf, resp, 8);
+						CANbus->write(txmsg);
+					}
+					delete msg; // Cleanup, cleanup
+					delete resp;
+					read = true;
+				}
+				teensyCANBase = teensyCANBase->nextTeensyCANBase;
+			}
 		}
 	}
-	return 1;
+
+	delay(10);
 }
-int TeensyCANBase::write(byte* &msg) {
-	CAN_message_t txmsg;
 
-	txmsg.id = canID;
-	txmsg.len = 8;
+int TeensyCANBase::call(byte * msg, byte * resp){
+	return callback(msg, resp);
+}
 
-	memcpy(txmsg.buf, msg, 8);
-	CANbus.write(txmsg);
-
-	return 0;
+uint32_t TeensyCANBase::getId(){
+	return canID;
 }
