@@ -92,6 +92,22 @@ protected:
 
 };
 
+void CAN_begin(){
+	TeensyCANBase::begin();
+}
+
+void CAN_update(){
+	TeensyCANBase::update();
+}
+
+void CAN_end(){
+	TeensyCANBase::end();
+}
+
+void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
+	TeensyCANBase newInstance(id, callback);
+}
+
 TeensyCANBase * TeensyCANBase::firstTeensyCANBase = NULL;
 FlexCAN * TeensyCANBase::CANbus = NULL;
 
@@ -160,20 +176,4 @@ int TeensyCANBase::call(byte * msg, byte * resp){
 
 uint32_t TeensyCANBase::getId(){
 	return canID;
-}
-
-void frccan::begin(){
-	TeensyCANBase::begin();
-}
-
-void frccan::end(){
-	TeensyCANBase::end();
-}
-
-void frccan::update(){
-	TeensyCANBase::update();
-}
-
-void frccan::add_canid(uint32_t id, int (*callback)(byte* msg, byte* resp)){
-	TeensyCANBase newInstance(id, callback);
 }
