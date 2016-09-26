@@ -19,8 +19,8 @@ void CAN_update();
 void CAN_end();
 /**
    Function that adds another CAN ID and callback
-   \param id the message ID that this instance responds to
-   \param callback the function that this instance will call
+   @param id the message ID that this instance responds to
+   @param callback the function that this instance will call
    when it recieves a message
    The parameter msg is the 8 bytes that the message contained
    The parameter resp is the 8 bytes that the function returns

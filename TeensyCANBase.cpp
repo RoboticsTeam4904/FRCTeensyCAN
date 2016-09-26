@@ -30,8 +30,8 @@ private:
 public:
 	/**
 	   Constructor for a TeensyCANBase
-	   \param id the message ID that this instance responds to
-	   \param callback the function that this instance will call
+	   @param id the message ID that this instance responds to
+	   @param callback the function that this instance will call
 	   when it recieves a message
 	   The parameter msg is the 8 bytes that the message contained
 	   The parameter resp is the 8 bytes that the function returns
@@ -70,8 +70,8 @@ public:
 
 	/**
 	   Call the callback of this instance
-	   \param msg the 8 bytes of input
-	   \param resp the 8 bytes of output
+	   @param msg the 8 bytes of input
+	   @param resp the 8 bytes of output
 	 */
 	int call(byte* msg, byte* resp);
 protected:
