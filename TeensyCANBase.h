@@ -1,6 +1,8 @@
 #ifndef __TeensyCANBase_H__
 #define __TeensyCANBase_H__
 
+#include <Arduino.h>
+
 /**
    Function that initializes TeensyCANBase
    This should be called in setup()

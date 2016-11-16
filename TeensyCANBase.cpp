@@ -1,5 +1,4 @@
 #include "TeensyCANBase.h"
-#include <Arduino.h>
 #include "../FlexCAN/FlexCAN.h"
 
 /**
