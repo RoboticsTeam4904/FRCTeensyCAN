@@ -32,4 +32,9 @@ void CAN_end();
 */
 void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp));
 
+/**
+   Removes a CAN id
+*/
+void CAN_remove_id(uint32_t id);
+
 #endif // __TeensyCANBase_H__

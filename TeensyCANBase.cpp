@@ -17,11 +17,6 @@
 class TeensyCANBase {
 private:
 	/**
-	   The first TeensyCANBase in the linked list
-	   Used to begin the iterating
-	*/
-	static TeensyCANBase * firstTeensyCANBase;
-	/**
 	   The single instance of FlexCAN for all
 	   instances of TeensyCANBase
 	*/
@@ -56,6 +51,11 @@ public:
 	*/
 	static void update();
 
+	/**
+	   The first TeensyCANBase in the linked list
+	   Used to begin the iterating
+	*/
+	static TeensyCANBase * firstTeensyCANBase;
 	/**
 	   The next TeensyCANBase in the linked list
 	 */
@@ -104,7 +104,15 @@ void CAN_end(){
 }
 
 void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
-	TeensyCANBase newInstance(id, callback);
+	TeensyCANBase * newInstance = new TeensyCANBase(id, callback); // Cleanup occurs in remove
+}
+
+void CAN_remove_id(uint32_t id){
+	TeensyCANBase * next = TeensyCANBase::firstTeensyCANBase;
+	while(next->nextTeensyCANBase->getId() != id){
+		next = next->nextTeensyCANBase;
+	}
+	delete next;
 }
 
 TeensyCANBase * TeensyCANBase::firstTeensyCANBase = NULL;
