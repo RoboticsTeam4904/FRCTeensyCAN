@@ -17,6 +17,11 @@
 class TeensyCANBase {
 private:
 	/**
+	   The first TeensyCANBase in the linked list
+	   Used to begin the iterating
+	*/
+	static TeensyCANBase * firstTeensyCANBase;
+	/**
 	   The single instance of FlexCAN for all
 	   instances of TeensyCANBase
 	*/
@@ -50,12 +55,11 @@ public:
 	   This should be called at some point in loop()
 	*/
 	static void update();
-
 	/**
-	   The first TeensyCANBase in the linked list
-	   Used to begin the iterating
+	   Static function to remove a CAN id from the list
 	*/
-	static TeensyCANBase * firstTeensyCANBase;
+	static void remove_id(uint32_t id);
+
 	/**
 	   The next TeensyCANBase in the linked list
 	 */
@@ -108,11 +112,7 @@ void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
 }
 
 void CAN_remove_id(uint32_t id){
-	TeensyCANBase * next = TeensyCANBase::firstTeensyCANBase;
-	while(next->nextTeensyCANBase->getId() != id){
-		next = next->nextTeensyCANBase;
-	}
-	delete next;
+	TeensyCANBase::remove_id(id);
 }
 
 TeensyCANBase * TeensyCANBase::firstTeensyCANBase = NULL;
@@ -136,6 +136,14 @@ TeensyCANBase::TeensyCANBase(uint32_t id, int (*callback)(byte* msg, byte* resp)
 void TeensyCANBase::begin() {
 	CANbus = new FlexCAN(1000000);
 	CANbus->begin();
+}
+
+void TeensyCANBase::remove_id(uint32_t id){
+	TeensyCANBase * next = TeensyCANBase::firstTeensyCANBase;
+	while(next->nextTeensyCANBase->getId() != id){
+		next = next->nextTeensyCANBase;
+	}
+	delete next;
 }
 
 void TeensyCANBase::end() {
