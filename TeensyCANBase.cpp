@@ -154,12 +154,11 @@ void TeensyCANBase::end() {
 void TeensyCANBase::update(){
 	while(CANbus->available()){
 		TeensyCANBase * teensyCANBase = TeensyCANBase::firstTeensyCANBase;
-		bool read = false;
 
 		CAN_message_t rxmsg;
 		
 		if (CANbus->read(rxmsg)) {
-			while(!read && teensyCANBase != NULL){
+			while(teensyCANBase != NULL){
 				if(rxmsg.id == teensyCANBase->getId()){
 					byte * msg = (uint8_t *) malloc(8);
 					memcpy(msg, rxmsg.buf, 8);
@@ -173,9 +172,9 @@ void TeensyCANBase::update(){
 						memcpy(txmsg.buf, resp, 8);
 						CANbus->write(txmsg);
 					}
-					delete msg; // Cleanup, cleanup
-					delete resp;
-					read = true;
+					free(msg); // Cleanup, cleanup
+					free(resp);
+					break;
 				}
 				teensyCANBase = teensyCANBase->nextTeensyCANBase;
 			}
