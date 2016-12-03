@@ -3,6 +3,17 @@
 
 #include <Arduino.h>
 
+class AbstractTeensyCAN {
+public:
+	AbstractTeensyCAN(uint32_t id);
+
+	uint32_t getId();
+
+	virtual int call(byte* msg, byte* resp) = 0;
+protected:
+	uint32_t canID;
+};
+
 /**
    Function that initializes TeensyCANBase
    This should be called in setup()
@@ -31,6 +42,13 @@ void CAN_end();
    1 means that resp is empty and should not be sent
 */
 void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp));
+/**
+   Function that allows an instance of a class access to CAN
+   @param TeensyCAN the class that can now access CAN
+   When the AbstractTeensyCAN's ID is detected in a message, the
+   call function will be called
+*/
+void CAN_add(AbstractTeensyCAN * TeensyCAN);
 
 /**
    Removes a CAN id
