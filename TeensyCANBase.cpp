@@ -113,7 +113,7 @@ void CAN_remove_id(uint32_t id){
 }
 
 TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp))
-	: canID(id), callback(callback){}
+	: AbstractTeensyCAN(id), callback(callback){}
 
 int TeensyCANFunction::call(byte * msg, byte * resp){
 	return callback(msg, resp);
