@@ -1,24 +1,61 @@
 #include "TeensyCANBase.h"
 #include "../FlexCAN/FlexCAN.h"
 
+/**
+   Pointer to the FlexCAN object
+   Only one of these should exist
+ */
 FlexCAN * CANbus = NULL;
+/**
+   The first node in the linked list of AbstractTeensyCAN 
+ */
 LinkedListNode<AbstractTeensyCAN> * firstNode;
 
+/**
+   The linked list consists entirely of the classes, so
+   this class simply calls a function when a message is
+   recieved. It should not be exposed generally, it will
+   be more difficult to extend it than to extend
+   AbstractTeensyCAN.
+ */
 class TeensyCANFunction : public AbstractTeensyCAN{
 public:
+	/**
+	   Constructor
+	   @param id the message ID that this class will respond to
+	   @param callback the function that this class will call
+	 */
 	TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp));
 
+	/**
+	   Call the function with the CAN message and response
+	   @param msg the 8 byte CAN message
+	   @param resp the 8 byte CAN response
+	   @return the return of the callback function
+	   0 means send, 1 means do not send
+	 */
 	int call(byte* msg, byte* resp);
 protected:
+	*/**
+	    The callback function for this instance
+	  */
 	int (*callback)(byte* msg, byte* resp);
 
 };
 
+/**
+   Function that initializes TeensyCANBase
+   This starts the FlexCAN instance at 1 megabit
+ */
 void CAN_begin(){
 	CANbus = new FlexCAN(1000000);
 	CANbus->begin();
 }
 
+/**
+   Function to look for new CAN messages and call
+   the appropriate class
+ */
 void CAN_update(){
 	while(CANbus->available()){
 		LinkedListNode<AbstractTeensyCAN> * node = firstNode;
@@ -48,10 +85,12 @@ void CAN_update(){
 			}
 		}
 	}
-
-	delay(10);
 }
 
+/**
+   Function that cleans up FlexCAN
+   and deletes the LinkedList
+ */
 void CAN_end(){
 	LinkedListNode<AbstractTeensyCAN> * node = firstNode;
 
@@ -68,6 +107,11 @@ void CAN_end(){
 	delete CANbus;
 }
 
+/**
+   Function that adds a new TeensyCANFunction class
+   to the linked list given an id and a callback
+   For usage, see documentation in the header file
+ */
 void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
 	TeensyCANFunction * teensyCANFunction = new TeensyCANFunction(id, callback); // Cleanup occurs in remove
 
@@ -87,6 +131,10 @@ void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
 	}
 }
 
+/**
+   Delete a class from the linked list
+   with a given CAN ID
+ */
 void CAN_remove_id(uint32_t id){
 	if(firstNode == NULL){
 		return;
@@ -112,9 +160,21 @@ void CAN_remove_id(uint32_t id){
 	}
 }
 
+/**
+   Constructor for a TeensyCANFunction
+   @param id the message ID that this class will respond to
+   @param callback the function that this class will call
+ */
 TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp))
 	: AbstractTeensyCAN(id), callback(callback){}
 
+/**
+   Call the callback for a TeensyCANFunction
+   @param msg the 8 byte CAN message
+   @param resp the 8 byte CAN response
+   @return the return of the callback function
+   0 means send, 1 means do not send
+*/
 int TeensyCANFunction::call(byte * msg, byte * resp){
 	return callback(msg, resp);
 }

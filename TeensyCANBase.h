@@ -11,7 +11,7 @@
 void CAN_begin();
 /**
    Function to look for new CAN messages and call
-   the appropriate callback
+   the appropriate class
    This should be called at some point in loop()
 */
 void CAN_update();
@@ -33,15 +33,15 @@ void CAN_end();
 */
 void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp));
 /**
-   Function that allows an instance of a class access to CAN
-   @param TeensyCAN the class that can now access CAN
+   Function that adds an instance of a AbstractTeensyCAN class
+   @param TeensyCAN the class to connect to CAN
    When the AbstractTeensyCAN's ID is detected in a message, the
    call function will be called
 */
 void CAN_add(AbstractTeensyCAN * TeensyCAN);
 
 /**
-   Removes a CAN id
+   Removes a CAN ID
 */
 void CAN_remove_id(uint32_t id);
 
