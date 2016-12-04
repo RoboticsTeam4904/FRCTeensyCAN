@@ -2,17 +2,7 @@
 #define __TeensyCANBase_H__
 
 #include <Arduino.h>
-
-class AbstractTeensyCAN {
-public:
-	AbstractTeensyCAN(uint32_t id);
-
-	uint32_t getId();
-
-	virtual int call(byte* msg, byte* resp) = 0;
-protected:
-	uint32_t canID;
-};
+#include "AbstractTeensyCAN.h"
 
 /**
    Function that initializes TeensyCANBase

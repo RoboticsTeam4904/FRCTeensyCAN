@@ -118,9 +118,3 @@ TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byt
 int TeensyCANFunction::call(byte * msg, byte * resp){
 	return callback(msg, resp);
 }
-
-AbstractTeensyCAN::AbstractTeensyCAN(uint32_t id) : canID(id){}
-
-uint32_t AbstractTeensyCAN::getId(){
-	return canID;
-}
