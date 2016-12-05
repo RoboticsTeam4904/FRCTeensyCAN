@@ -121,13 +121,10 @@ void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
 		firstNode->next = NULL;
 	}
 	else{
-		LinkedListNode<AbstractTeensyCAN> * node = firstNode;
-		while(node->next != NULL){
-			node = node->next;
-		}
-		next->next = new LinkedListNode<AbstractTeensyCAN>;
-		next->next->data = teensyCANFunction;
-		next->next->next = NULL;
+		LinkedListNode<AbstractTeensyCAN> * lastFirst = firstNode;
+		firstNode = new LinkedListNode<AbstractTeensyCAN>;
+		firstNode->data = teensyCANFunction;
+		firstNode->next = lastFirst;
 	}
 }
 
