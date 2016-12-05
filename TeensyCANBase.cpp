@@ -1,4 +1,5 @@
 #include "TeensyCANBase.h"
+#include "LinkedList.h"
 #include "../FlexCAN/FlexCAN.h"
 
 /**
@@ -36,7 +37,7 @@ public:
 	 */
 	int call(byte* msg, byte* resp);
 protected:
-	*/**
+	/**
 	    The callback function for this instance
 	  */
 	int (*callback)(byte* msg, byte* resp);

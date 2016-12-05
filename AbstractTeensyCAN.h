@@ -1,6 +1,8 @@
 #ifndef __AbstractTeensyCAN_H__
 #define __AbstractTeensyCAN_H__
 
+#include <Arduino.h>
+
 /**
    Base class for future classes that can
    be associated with a CAN ID in order
