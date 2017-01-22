@@ -23,7 +23,7 @@ class TeensyCANFunction : public AbstractTeensyCAN{
 public:
 	/**
 	   Constructor
-	   @param id the message ID that this class will respond to
+	   @param id the message ID that this class will respond to (0x600-0x6FF)
 	   @param callback the function that this class will call
 	 */
 	TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp));
@@ -50,7 +50,7 @@ protected:
  */
 void CAN_begin(){
 	CANbus = new FlexCAN(1000000);
-	CANbus->begin();
+	CANbus->begin(0x6FF); // 0x6FF is the filter
 }
 
 /**
