@@ -102,6 +102,7 @@ void CAN_end(){
 	firstNode = NULL;
 	
 	Can0.end();
+	delete CANbus;
 }
 
 /**
