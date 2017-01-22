@@ -117,7 +117,7 @@ void CAN_end(){
    When the AbstractTeensyCAN's ID is detected in a message, the
    call function will be called
 */
-void CAN_add_id(AbstractTeensyCAN * newAbstractTeensyCAN){
+void CAN_add(AbstractTeensyCAN * newAbstractTeensyCAN){
 	if(firstNode == NULL){
 		firstNode = new LinkedListNode<AbstractTeensyCAN>;
 		firstNode->data = newAbstractTeensyCAN;
