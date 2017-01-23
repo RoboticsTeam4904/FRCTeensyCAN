@@ -32,7 +32,7 @@ public:
 	   @param resp: the CAN response (8 bytes long)
 	   @return: 0 to send response, 1 to hold
 	 */
-	virtual int call(byte* msg, byte* resp) = 0;
+	virtual int call(byte* msg) = 0;
 protected:
 	/**
 	   The ID of CAN messages to read/write

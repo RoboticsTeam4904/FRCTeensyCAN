@@ -26,7 +26,7 @@ public:
 	   @param id the message ID that this class will respond to (0x600-0x6FF)
 	   @param callback the function that this class will call
 	 */
-	TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp));
+	TeensyCANFunction(uint32_t id, int (*callback)(byte* msg));
 
 	/**
 	   Call the function with the CAN message and response
@@ -35,12 +35,12 @@ public:
 	   @return the return of the callback function
 	   0 means send, 1 means do not send
 	 */
-	int call(byte* msg, byte* resp);
+	int call(byte* msg);
 protected:
 	/**
 	    The callback function for this instance
 	  */
-	int (*callback)(byte* msg, byte* resp);
+	int (*callback)(byte* msg);
 
 };
 
@@ -50,7 +50,11 @@ protected:
  */
 void CAN_begin(){
 	CANbus = new FlexCAN(1000000);
-	CANbus->begin(0x6FF); // 0x6FF is the filter
+	CAN_filter_t filter;
+	filter.rtr = 0;
+	filter.ext = 0;
+	filter.id = 0x6FF; // Change this for different IDs
+	CANbus->begin(filter);
 }
 
 /**
@@ -66,23 +70,11 @@ void CAN_update(){
 		if (CANbus->read(rxmsg)) {
 			while(node != NULL){
 				if(rxmsg.id == node->data->getId()){
-					byte * msg = (uint8_t *) malloc(8);
+					byte * msg = new byte[8];
 					memcpy(msg, rxmsg.buf, 8);
-					byte * resp = (uint8_t *) malloc(8);
-					
-					CAN_message_t txmsg;
-					txmsg.id = node->data->getId();
-					txmsg.len = 8;
 
-					if(node->data->call(msg, resp) == 0){
-						memcpy(txmsg.buf, resp, 8);
-					}
-					else{
-						bzero(txmsg.buf, 8);
-					}
-					CANbus->write(txmsg);
-					free(msg); // Cleanup, cleanup
-					free(resp);
+					node->data->call(msg);
+					delete msg; // Cleanup, cleanup
 					break;
 				}
 				node = node->next;
@@ -142,7 +134,7 @@ void CAN_add(AbstractTeensyCAN * newAbstractTeensyCAN){
    0 means that resp is non-empty
    1 means that resp is empty and should not be sent
 */
-void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
+void CAN_add_id(uint32_t id, int (*callback)(byte* msg)){
 	TeensyCANFunction * teensyCANFunction = new TeensyCANFunction(id, callback); // Cleanup occurs in remove
 
 	if(firstNode == NULL){
@@ -156,6 +148,17 @@ void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
 		firstNode->data = teensyCANFunction;
 		firstNode->next = lastFirst;
 	}
+}
+
+void CAN_write(uint32_t id, byte * msg){
+	CAN_message_t txmsg;
+
+	txmsg.id = id;
+	txmsg.len = 8;
+
+	memcpy(txmsg.buf, msg, 8);
+
+	CANbus->write(txmsg);
 }
 
 /**
@@ -192,7 +195,7 @@ void CAN_remove_id(uint32_t id){
    @param id the message ID that this class will respond to
    @param callback the function that this class will call
 */
-TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp))
+TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg))
 	: AbstractTeensyCAN(id), callback(callback){}
 
 /**
@@ -202,6 +205,6 @@ TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byt
    @return the return of the callback function
    0 means send, 1 means do not send
 */
-int TeensyCANFunction::call(byte * msg, byte * resp){
-	return callback(msg, resp);
+int TeensyCANFunction::call(byte * msg){
+	return callback(msg);
 }
