@@ -26,7 +26,7 @@ public:
 	   @param id the message ID that this class will respond to (0x600-0x6FF)
 	   @param callback the function that this class will call
 	 */
-	TeensyCANFunction(uint32_t id, int (*callback)(byte* msg));
+	TeensyCANFunction(uint32_t id, void (*callback)(byte* msg));
 
 	/**
 	   Call the function with the CAN message and response
@@ -35,12 +35,12 @@ public:
 	   @return the return of the callback function
 	   0 means send, 1 means do not send
 	 */
-	int call(byte* msg);
+	void call(byte* msg);
 protected:
 	/**
 	    The callback function for this instance
 	  */
-	int (*callback)(byte* msg);
+	void (*callback)(byte* msg);
 
 };
 
@@ -134,7 +134,7 @@ void CAN_add(AbstractTeensyCAN * newAbstractTeensyCAN){
    0 means that resp is non-empty
    1 means that resp is empty and should not be sent
 */
-void CAN_add_id(uint32_t id, int (*callback)(byte* msg)){
+void CAN_add_id(uint32_t id, void (*callback)(byte* msg)){
 	uint32_t messageID = 0; // This ensures that all memory not set is 0
 	messageID += id;
 	TeensyCANFunction * teensyCANFunction = new TeensyCANFunction(messageID, callback); // Cleanup occurs in remove
@@ -198,7 +198,7 @@ void CAN_remove_id(uint32_t id){
    @param id the message ID that this class will respond to
    @param callback the function that this class will call
 */
-TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg))
+TeensyCANFunction::TeensyCANFunction(uint32_t id, void (*callback)(byte* msg))
 	: AbstractTeensyCAN(id), callback(callback){}
 
 /**
@@ -208,6 +208,6 @@ TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg))
    @return the return of the callback function
    0 means send, 1 means do not send
 */
-int TeensyCANFunction::call(byte * msg){
-	return callback(msg);
+void TeensyCANFunction::call(byte * msg){
+	callback(msg);
 }

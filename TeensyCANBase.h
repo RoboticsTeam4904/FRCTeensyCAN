@@ -31,7 +31,7 @@ void CAN_end();
    0 means that resp is non-empty
    1 means that resp is empty and should not be sent
 */
-void CAN_add_id(uint32_t id, int (*callback)(byte* msg));
+void CAN_add_id(uint32_t id, void (*callback)(byte* msg));
 /**
    Function that adds an instance of a AbstractTeensyCAN class
    @param TeensyCAN the class to connect to CAN
