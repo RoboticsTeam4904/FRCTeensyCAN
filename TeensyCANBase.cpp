@@ -50,10 +50,6 @@ protected:
  */
 void CAN_begin(){
 	CANbus = new FlexCAN(1000000);
-	CAN_filter_t filter;
-	filter.rtr = 0;
-	filter.ext = 0;
-	filter.id = 0x0FFFFFFF; // Change this for different IDs
 	CANbus->begin();
 }
 
@@ -135,9 +131,7 @@ void CAN_add(AbstractTeensyCAN * newAbstractTeensyCAN){
    1 means that resp is empty and should not be sent
 */
 void CAN_add_id(uint32_t id, void (*callback)(byte* msg)){
-	uint32_t messageID = 0; // This ensures that all memory not set is 0
-	messageID += id;
-	TeensyCANFunction * teensyCANFunction = new TeensyCANFunction(messageID, callback); // Cleanup occurs in remove
+	TeensyCANFunction * teensyCANFunction = new TeensyCANFunction(id, callback); // Cleanup occurs in remove
 
 	if(firstNode == NULL){
 		firstNode = new LinkedListNode<AbstractTeensyCAN>;
@@ -155,8 +149,7 @@ void CAN_add_id(uint32_t id, void (*callback)(byte* msg)){
 void CAN_write(uint32_t id, byte * msg){
 	CAN_message_t txmsg;
 
-	txmsg.id = 0; // This ensures that all memory not set is 0
-	txmsg.id += id;
+	txmsg.id = 0x00000FFF & id; // This ensures that all memory not set is 0
 	txmsg.len = 8;
 
 	memcpy(txmsg.buf, msg, 8);
