@@ -7,7 +7,7 @@
    @param id: the CAN ID
 */
 AbstractTeensyCAN::AbstractTeensyCAN(uint32_t id){
-	canID = 0x00000FFF & id; // This ensures that all memory not set is 0
+	canID = id; // This ensures that all memory not set is 0
 }
 
 /**

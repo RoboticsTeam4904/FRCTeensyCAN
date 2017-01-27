@@ -149,7 +149,7 @@ void CAN_add_id(uint32_t id, void (*callback)(byte* msg)){
 void CAN_write(uint32_t id, byte * msg){
 	CAN_message_t txmsg;
 
-	txmsg.id = 0x00000FFF & id; // This ensures that all memory not set is 0
+	txmsg.id = id;
 	txmsg.len = 8;
 
 	memcpy(txmsg.buf, msg, 8);
