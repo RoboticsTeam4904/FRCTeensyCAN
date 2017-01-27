@@ -23,10 +23,10 @@ class TeensyCANFunction : public AbstractTeensyCAN{
 public:
 	/**
 	   Constructor
-	   @param id the message ID that this class will respond to
+	   @param id the message ID that this class will respond to (0x600-0x6FF)
 	   @param callback the function that this class will call
 	 */
-	TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp));
+	TeensyCANFunction(uint32_t id, void (*callback)(byte* msg));
 
 	/**
 	   Call the function with the CAN message and response
@@ -35,12 +35,12 @@ public:
 	   @return the return of the callback function
 	   0 means send, 1 means do not send
 	 */
-	int call(byte* msg, byte* resp);
+	void call(byte* msg);
 protected:
 	/**
 	    The callback function for this instance
 	  */
-	int (*callback)(byte* msg, byte* resp);
+	void (*callback)(byte* msg);
 
 };
 
@@ -66,23 +66,11 @@ void CAN_update(){
 		if (CANbus->read(rxmsg)) {
 			while(node != NULL){
 				if(rxmsg.id == node->data->getId()){
-					byte * msg = (uint8_t *) malloc(8);
+					byte * msg = new byte[8];
 					memcpy(msg, rxmsg.buf, 8);
-					byte * resp = (uint8_t *) malloc(8);
-					
-					CAN_message_t txmsg;
-					txmsg.id = node->data->getId();
-					txmsg.len = 8;
 
-					if(node->data->call(msg, resp) == 0){
-						memcpy(txmsg.buf, resp, 8);
-					}
-					else{
-						bzero(txmsg.buf, 8);
-					}
-					CANbus->write(txmsg);
-					free(msg); // Cleanup, cleanup
-					free(resp);
+					node->data->call(msg);
+					delete msg; // Cleanup, cleanup
 					break;
 				}
 				node = node->next;
@@ -112,11 +100,37 @@ void CAN_end(){
 }
 
 /**
-   Function that adds a new TeensyCANFunction class
-   to the linked list given an id and a callback
-   For usage, see documentation in the header file
+   Function that adds an instance of a AbstractTeensyCAN class
+   @param TeensyCAN the class to connect to CAN
+   When the AbstractTeensyCAN's ID is detected in a message, the
+   call function will be called
 */
-void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
+void CAN_add(AbstractTeensyCAN * newAbstractTeensyCAN){
+	if(firstNode == NULL){
+		firstNode = new LinkedListNode<AbstractTeensyCAN>;
+		firstNode->data = newAbstractTeensyCAN;
+		firstNode->next = NULL;
+	}
+	else{
+		LinkedListNode<AbstractTeensyCAN> * lastFirst = firstNode;
+		firstNode = new LinkedListNode<AbstractTeensyCAN>;
+		firstNode->data = newAbstractTeensyCAN;
+		firstNode->next = lastFirst;
+	}
+}
+
+/**
+   Function that adds another CAN ID and callback
+   @param id the message ID that this instance responds to
+   @param callback the function that this instance will call
+   when it recieves a message
+   The parameter msg is the 8 bytes that the message contained
+   The parameter resp is the 8 bytes that the function returns
+   The function returns an integer status
+   0 means that resp is non-empty
+   1 means that resp is empty and should not be sent
+*/
+void CAN_add_id(uint32_t id, void (*callback)(byte* msg)){
 	TeensyCANFunction * teensyCANFunction = new TeensyCANFunction(id, callback); // Cleanup occurs in remove
 
 	if(firstNode == NULL){
@@ -130,6 +144,17 @@ void CAN_add_id(uint32_t id, int (*callback)(byte* msg, byte* resp)){
 		firstNode->data = teensyCANFunction;
 		firstNode->next = lastFirst;
 	}
+}
+
+void CAN_write(uint32_t id, byte * msg){
+	CAN_message_t txmsg;
+
+	txmsg.id = id;
+	txmsg.len = 8;
+
+	memcpy(txmsg.buf, msg, 8);
+
+	CANbus->write(txmsg);
 }
 
 /**
@@ -166,7 +191,7 @@ void CAN_remove_id(uint32_t id){
    @param id the message ID that this class will respond to
    @param callback the function that this class will call
 */
-TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byte* resp))
+TeensyCANFunction::TeensyCANFunction(uint32_t id, void (*callback)(byte* msg))
 	: AbstractTeensyCAN(id), callback(callback){}
 
 /**
@@ -176,6 +201,6 @@ TeensyCANFunction::TeensyCANFunction(uint32_t id, int (*callback)(byte* msg, byt
    @return the return of the callback function
    0 means send, 1 means do not send
 */
-int TeensyCANFunction::call(byte * msg, byte * resp){
-	return callback(msg, resp);
+void TeensyCANFunction::call(byte * msg){
+	callback(msg);
 }

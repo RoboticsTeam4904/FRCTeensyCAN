@@ -6,7 +6,9 @@
    the CAN ID is needed.
    @param id: the CAN ID
 */
-AbstractTeensyCAN::AbstractTeensyCAN(uint32_t id) : canID(id){}
+AbstractTeensyCAN::AbstractTeensyCAN(uint32_t id){
+	canID = id; // This ensures that all memory not set is 0
+}
 
 /**
    Returns the classes's ID
