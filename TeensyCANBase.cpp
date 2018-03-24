@@ -49,8 +49,8 @@ protected:
    This starts the FlexCAN instance at 1 megabit
  */
 void CAN_begin(){
-	CANbus = new FlexCAN(1000000);
-	CANbus->begin();
+	CANbus = new FlexCAN();
+	CANbus->begin(1000000);
 }
 
 /**
