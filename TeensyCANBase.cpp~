@@ -1,6 +1,6 @@
 #include "TeensyCANBase.h"
 #include "LinkedList.h"
-#include "FlexCAN.h"
+#include "../FlexCAN/FlexCAN.h"
 
 /**
    Pointer to the FlexCAN object
@@ -8,7 +8,7 @@
  */
 FlexCAN * CANbus = NULL;
 /**
-   The first node in the linked list of AbstractTeensyCAN
+   The first node in the linked list of AbstractTeensyCAN 
  */
 LinkedListNode<AbstractTeensyCAN> * firstNode;
 
@@ -62,7 +62,7 @@ void CAN_update(){
 		LinkedListNode<AbstractTeensyCAN> * node = firstNode;
 
 		CAN_message_t rxmsg;
-
+		
 		if (CANbus->read(rxmsg)) {
 			while(node != NULL){
 				if(rxmsg.id == node->data->getId()){
@@ -94,7 +94,7 @@ void CAN_end(){
 	}
 
 	firstNode = NULL;
-
+	
 	CANbus->end();
 	delete CANbus;
 }
